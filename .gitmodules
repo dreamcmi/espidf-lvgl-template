@@ -1,0 +1,8 @@
+[submodule "components/lvgl/lvgl"]
+	path = components/lvgl/lvgl
+	url = https://github.com/lvgl/lvgl/
+	branch = release/v8.1
+[submodule "components/lvgl/lv_demos"]
+	path = components/lvgl/lv_demos
+	url = https://github.com/lvgl/lv_demos
+	branch = release/v8.1
