@@ -1,8 +1,10 @@
 #include "esp_err.h"
 #include "esp_log.h"
-#include "esp_timer.h"
 #include "lv_port.h"
 #include "lvgl.h"
+
+#include "freertos/FreeRTOS.h"
+#include "freertos/timers.h"
 
 #include "driver/gpio.h"
 #include "driver/spi_master.h"
@@ -14,10 +16,9 @@
 static lv_disp_drv_t disp_drv;
 static const char *TAG = "lv_port";
 
-static void lv_tick_inc_cb(void *data)
+static void lv_tick_inc_cb()
 {
-    uint32_t tick_inc_period_ms = *((uint32_t *)data);
-    lv_tick_inc(tick_inc_period_ms);
+    lv_tick_inc(1);
 }
 
 static bool lv_port_flush_ready(void)
@@ -104,6 +105,12 @@ static void lv_port_disp_init(void)
         ESP_LOGE(TAG,"LCD_DIRECTION error");
     }
 
+    // IDF 5.0 need it
+    if (ESP_IDF_VERSION_MAJOR > 4)
+    {
+        esp_lcd_panel_disp_on_off(panel_handle,true);
+    }
+    
     lv_disp_draw_buf_init(&draw_buf_dsc, p_disp_buf, NULL, LCD_WIDTH * disp_buf_height);
     lv_disp_drv_init(&disp_drv);
     disp_drv.hor_res = LCD_WIDTH;
@@ -116,17 +123,8 @@ static void lv_port_disp_init(void)
 
 static esp_err_t lv_port_tick_init(void)
 {
-    static const uint32_t tick_inc_period_ms = 5;
-    const esp_timer_create_args_t periodic_timer_args = {
-        .callback = lv_tick_inc_cb,
-        .name = "lvgl_tick",
-        .arg = &tick_inc_period_ms,
-        .dispatch_method = ESP_TIMER_TASK,
-        .skip_unhandled_events = true,
-    };
-    esp_timer_handle_t periodic_timer;
-    ESP_ERROR_CHECK(esp_timer_create(&periodic_timer_args, &periodic_timer));
-    ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_timer, tick_inc_period_ms * 1000));
+    TimerHandle_t os_timer = xTimerCreate("lvgl_tick", 1 / portTICK_PERIOD_MS, true, NULL, lv_tick_inc_cb);
+    xTimerStart(os_timer, 0);
     return ESP_OK;
 }
 

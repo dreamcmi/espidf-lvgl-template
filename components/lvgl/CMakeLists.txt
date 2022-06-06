@@ -36,7 +36,7 @@ idf_component_register(
         "lv_demos"
         "lv_port"
     REQUIRES 
-        esp_lcd)
+        esp_lcd driver)
 
 # Some of warinings from LVGL. Block them.
 target_compile_options(${COMPONENT_LIB} PRIVATE -w)

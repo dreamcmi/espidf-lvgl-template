@@ -15,7 +15,8 @@ void app_main(void)
     // lv_demo_stress();       /* A stress test for LVGL. */
     lv_demo_benchmark();    /* A demo to measure the performance of LVGL or to compare different settings. */
 
-    while (vTaskDelay(1), true) {
+    while (vTaskDelay(1), true)
+    {
         lv_task_handler();
     }
 }
